@@ -20,8 +20,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity {
-
+public class LoginPage {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,24 +33,4 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void open(View view) throws IOException {
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url("http://59.66.139.53:8888")
-                .get()
-                .build();
-        Call call = client.newCall(request);
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.d("MainActivity", "onFailure: " + e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.d("MainActivity", "onResponse: " + response.body().string());
-            }
-        });
-    } 
 }
