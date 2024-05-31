@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Note</string>
+    <string name="ip">http://59.66.139.53:8888</string>
 </resources>

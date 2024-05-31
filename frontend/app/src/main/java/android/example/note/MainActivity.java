@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     public void open(View view) throws IOException {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
-                .url("http://59.66.139.53:8888")
+                .url(getString(R.string.ip))
                 .get()
                 .build();
         Call call = client.newCall(request);
