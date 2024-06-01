@@ -2,6 +2,7 @@
 # 发送注册验证码
 import os
 import random
+import re
 import time
 from flask import Flask
 from flask import request, jsonify
@@ -13,9 +14,16 @@ reg = Blueprint('reg', __name__)
 
 @reg.route('/sendcode', methods=['POST'])
 def send_code():
-    email = request.form.get('mail')
+    email = request.form.get('email')
+    print(email)
     if not email:
-        return jsonify({'code': 1, 'msg': '参数不完整'})
+        return jsonify({'code': 400, 'msg': '参数不完整'})
+    
+    # ^(\\w+([-.][A-Za-z0-9]+)*){3,18}@\\w+([-.][A-Za-z0-9]+)*\\.\\w+([-.][A-Za-z0-9]+)*$
+    # 邮箱格式验证
+    if not re.match(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$', email):
+        return jsonify({'code': 401, 'msg': '邮箱格式错误'})
+
     message = Message('注册验证码', recipients=[email])
 
     current_path = os.path.dirname(__file__)
@@ -27,40 +35,95 @@ def send_code():
         lines = f.readlines()
         for line in lines:
             if email in line:
-                return jsonify({'code': 3, 'msg': '该邮箱已被注册'})
+                return jsonify({'code': 403, 'msg': '该邮箱已被注册'})
             
-    # 若该邮箱已发送过验证码，则不生成新的验证码，直接返回
+    # 若该邮箱3min内已发送过验证码，返回错误信息
     with open(code_path, 'r') as f:
         lines = f.readlines()
         for line in lines:
             if email in line:
-                return jsonify({'code': 0, 'msg': '发送成功'})
+                line = line.split()
+                if time.time() - float(line[2]) < 180:
+                    return jsonify({'code': 202, 'msg': '3分钟内已发送过验证码'})
+                break
 
     # 在10000-99999之间随机生成验证码
     code = random.randint(10000, 99999)
     message.body = '您的验证码是：' + str(code) + '，请在3分钟内输入'
 
-    # 本地存储验证码
-    with open(code_path, 'a') as f:
-        # 与邮箱绑定，3分钟内有效
-        # 获取当前时间
-        now = time.time()
-        f.write(email + ' ' + str(code) + ' ' + str(now) + '\n')
-
-    # 3min后删除该邮箱对应的验证码
-    def delete_code():
-        with open(code_path, 'a') as f:
-            # 搜索该邮箱对应的验证码
-            lines = f.readlines()
-            for i in range(len(lines)):
-                if email in lines[i]:
-                    lines.pop(i)
-                    break
-            f.write(''.join(lines))
+    # 若已存在该邮箱的验证码，更新验证码
+    with open(code_path, 'r') as f:
+        lines = f.readlines()
+    with open(code_path, 'w') as f:
+        for line in lines:
+            if email in line:
+                continue
+            f.write(line)
+        f.write(email + ' ' + str(code) + ' ' + str(time.time()) + '\n')
 
     try:
         mail.send(message)
 
     except Exception as e:
-        return jsonify({'code': 2, 'msg': '发送失败'})
-    return jsonify({'code': 0, 'msg': '发送成功'})
+        return jsonify({'code': 500, 'msg': '发送失败'})
+    
+    print('发送成功')
+    return jsonify({'code': 200, 'msg': '发送成功'})
+
+# 注册
+@reg.route('/register', methods=['POST'])
+def register():
+    email = request.form.get('email')
+    code = request.form.get('code')
+    password = request.form.get('password')
+    if not email or not code or not password:
+        return jsonify({'code': 400, 'msg': '参数不完整'})
+    current_path = os.path.dirname(__file__)
+    code_path = os.path.join(current_path, 'db', 'code.txt')
+    user_path = os.path.join(current_path, 'db', 'user.txt')
+
+    if not re.match(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$', email):
+        return jsonify({'code': 401, 'msg': '邮箱格式错误'})
+
+    # 验证码验证
+    with open(code_path, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            if email in line:
+                line = line.split()
+                if code != line[1]:
+                    return jsonify({'code': 403, 'msg': '验证码错误'})
+                # 验证码3分钟内有效
+                if time.time() - float(line[2]) > 180:
+                    return jsonify({'code': 202, 'msg': '验证码已过期'})
+                break
+        else:
+            return jsonify({'code': 403, 'msg': '验证码错误'})
+
+    # 保存用户信息
+    with open(user_path, 'a') as f:
+        f.write(email + ' ' + password + '\n')
+
+    return jsonify({'code': 200, 'msg': '注册成功'})
+
+# 登录
+@reg.route('/login', methods=['POST'])
+def login():
+    email = request.form.get('email')
+    password = request.form.get('password')
+    if not email or not password:
+        return jsonify({'code': 400, 'msg': '参数不完整'})
+    current_path = os.path.dirname(__file__)
+    user_path = os.path.join(current_path, 'db', 'user.txt')
+
+    with open(user_path, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            if email in line:
+                line = line.split()
+                if password == line[1]:
+                    return jsonify({'code': 200, 'msg': '登录成功'})
+                else:
+                    return jsonify({'code': 401, 'msg': '密码错误'})
+        else:
+            return jsonify({'code': 403, 'msg': '该邮箱未注册'})
