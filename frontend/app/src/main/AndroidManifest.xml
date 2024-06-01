@@ -30,6 +30,13 @@
             </intent-filter>
 
         </activity>
+
+        <activity
+            android:name=".RegisterPage"
+            android:exported="true">
+        </activity>
+
+        
     </application>
 
 </manifest>
