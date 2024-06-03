@@ -80,12 +80,8 @@ public class LoginPage extends AppCompatActivity{
                 String res = response.body().string();
                 String code = res.substring(res.indexOf("code") + 7, res.indexOf("code") + 10);
                 if (code.equals("200")) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(LoginPage.this, "登录成功", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    Intent intent = new Intent(LoginPage.this, HomePage.class);
+                    startActivity(intent);
                 } else if (code.equals("401")) {
                     runOnUiThread(new Runnable() {
                         @Override

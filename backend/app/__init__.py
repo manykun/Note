@@ -19,5 +19,8 @@ def create_app():
 
     from . import register
     app.register_blueprint(register.reg)
+
+    from . import note
+    app.register_blueprint(note.note)
     
     return app
