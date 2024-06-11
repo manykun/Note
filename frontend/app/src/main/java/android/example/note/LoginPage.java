@@ -17,15 +17,29 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import java.io.IOException;
+// import com.xuexiang.xui.XUI;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+ 
 public class LoginPage extends AppCompatActivity{
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_PASSWORD = "password";
+    private static final String KEY_UID = "uid";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +50,68 @@ public class LoginPage extends AppCompatActivity{
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        SharedPreferences sharedPreferences = getSharedPreferences("login", Context.MODE_PRIVATE);
+        String email = sharedPreferences.getString(KEY_EMAIL, "");
+        String password = sharedPreferences.getString(KEY_PASSWORD, "");
+        String uid = sharedPreferences.getString(KEY_UID, "");
+        if (!email.equals("") && !password.equals("")) {
+            // 自动登录
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                    .readTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                    .writeTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                    .build();
+
+            RequestBody formBody = new FormBody.Builder()
+                    .add("email", email)
+                    .add("password", password)
+                    .build();
+            Request request = new Request.Builder()           
+                    .url(getString(R.string.ip) + "/login")
+                    .post(formBody)
+                    .build();
+            Call call = client.newCall(request);
+
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.d("LoginPage", "onFailure: " + e.getMessage());
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String res = response.body().string();
+                    Log.d("LoginPage", "onResponse: " + res);
+
+                    JSONObject jsonObject = null;
+                    try {
+                        jsonObject = new JSONObject(res);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    String code = jsonObject.optString("code");
+                    if (code.equals("200")) {
+                        Intent intent = new Intent(LoginPage.this, MainActivity.class);
+                        startActivity(intent);
+                    } else if (code.equals("401")) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(LoginPage.this, "密码错误", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else if (code.equals("403")) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(LoginPage.this, "该邮箱未注册", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+            });
+        }
     }
 
     public void toRegister(View view) {
@@ -78,9 +154,29 @@ public class LoginPage extends AppCompatActivity{
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String res = response.body().string();
-                String code = res.substring(res.indexOf("code") + 7, res.indexOf("code") + 10);
+
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(res);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                String code = jsonObject.optString("code");
+
                 if (code.equals("200")) {
-                    Intent intent = new Intent(LoginPage.this, HomePage.class);
+                    SharedPreferences sharedPreferences = getSharedPreferences("login", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(KEY_EMAIL, email);
+                    editor.putString(KEY_PASSWORD, password);
+
+                    // 获取uid
+                    String uid = jsonObject.optString("uid");
+                    editor.putString(KEY_UID, uid);
+
+                    editor.apply();
+                    Log.d("LoginPage", "uid: " + uid);
+
+                    Intent intent = new Intent(LoginPage.this, MainActivity.class);
                     startActivity(intent);
                 } else if (code.equals("401")) {
                     runOnUiThread(new Runnable() {

@@ -32,8 +32,14 @@ android {
 }
 
 dependencies {
+    implementation  libs.bubbletabbar
 
-    implementation 'com.squareup.okhttp3:okhttp:3.14.+'
+    implementation libs.xpage.lib
+    annotationProcessor libs.xpage.compiler
+
+    implementation libs.xui
+    implementation libs.glide
+    implementation libs.okhttp
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
