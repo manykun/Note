@@ -100,9 +100,34 @@ def register():
         else:
             return jsonify({'code': 403, 'msg': '验证码错误'})
 
+    # 生成专属uid
+    uid = random.randint(100000, 999999)
+    # 检索是否已存在该uid
+    unique = False
+    while not unique:
+        with open(user_path, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                if str(uid) in line:
+                    uid = random.randint(100000, 999999)
+                    break            
+            unique = True
+
     # 保存用户信息
     with open(user_path, 'a') as f:
-        f.write(email + ' ' + password + '\n')
+        f.write(email + ' ' + password + ' ' + str(uid) + '\n')
+
+    # 生成用户文件夹
+    user_path = os.path.join(current_path, 'db', 'user', str(uid))
+    os.makedirs(user_path)
+    # 生成用户信息文件
+    info_path = os.path.join(user_path, 'userinfo')
+    with open(info_path, 'w') as f:
+        # 写入uid和默认用户名以及默认个性签名
+        f.write(str(uid) + ' ' + "username" + ' ' + "signature")
+    # 生成笔记文件夹
+    note_path = os.path.join(user_path, 'note')
+    os.makedirs(note_path)
 
     return jsonify({'code': 200, 'msg': '注册成功'})
 
@@ -122,51 +147,9 @@ def login():
             if email in line:
                 line = line.split()
                 if password == line[1]:
-                    return jsonify({'code': 200, 'msg': '登录成功'})
+                    # 返回uid
+                    return jsonify({'code': 200, 'msg': '登录成功', 'uid': line[2]})
                 else:
                     return jsonify({'code': 401, 'msg': '密码错误'})
         else:
             return jsonify({'code': 403, 'msg': '该邮箱未注册'})
-        
-# 修改密码
-@reg.route('/changepwd', methods=['POST'])
-def change_pwd():
-    email = request.form.get('email')
-    code = request.form.get('code')
-    password = request.form.get('password')
-    if not email or not code or not password:
-        return jsonify({'code': 400, 'msg': '参数不完整'})
-    current_path = os.path.dirname(__file__)
-    code_path = os.path.join(current_path, 'db', 'code.txt')
-    user_path = os.path.join(current_path, 'db', 'user.txt')
-
-    if not re.match(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$', email):
-        return jsonify({'code': 401, 'msg': '邮箱格式错误'})
-
-    # 验证码验证
-    with open(code_path, 'r') as f:
-        lines = f.readlines()
-        for line in lines:
-            if email in line:
-                line = line.split()
-                if code != line[1]:
-                    return jsonify({'code': 403, 'msg': '验证码错误'})
-                # 验证码3分钟内有效
-                if time.time() - float(line[2]) > 180:
-                    return jsonify({'code': 202, 'msg': '验证码已过期'})
-                break
-        else:
-            return jsonify({'code': 403, 'msg': '验证码错误'})
-
-    # 修改密码
-    with open(user_path, 'r') as f:
-        lines = f.readlines()
-    with open(user_path, 'w') as f:
-        for line in lines:
-            if email in line:
-                f.write(email + ' ' + password + '\n')
-            else:
-                f.write(line)
-    
-    return jsonify({'code': 200, 'msg': '修改成功'})
-

@@ -1,2 +1,1 @@
-xdk21@mails.tsinghua.edu.cn 123456
-1@1 1
+1@1 1 123456

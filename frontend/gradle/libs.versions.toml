@@ -1,5 +1,8 @@
 [versions]
 agp = "8.3.0"
+bubbletabbar = "1.0.8"
+glide = "4.12.0"
+jptabbar = "1.1.2"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
@@ -11,8 +14,14 @@ lifecycleLivedataKtx = "2.6.1"
 lifecycleViewmodelKtx = "2.6.1"
 navigationFragment = "2.6.0"
 navigationUi = "2.6.0"
+okhttp = "3.14.9"
+xpageLib = "3.4.0"
+xui = "1.2.1"
 
 [libraries]
+bubbletabbar = { module = "io.ak1:bubbletabbar", version.ref = "bubbletabbar" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+jptabbar = { module = "com.jpeng:JPTabBar", version.ref = "jptabbar" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -24,6 +33,10 @@ lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-lived
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+xpage-compiler = { module = "com.github.xuexiangjys.XPage:xpage-compiler", version.ref = "xpageLib" }
+xpage-lib = { module = "com.github.xuexiangjys.XPage:xpage-lib", version.ref = "xpageLib" }
+xui = { module = "com.github.xuexiangjys:XUI", version.ref = "xui" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

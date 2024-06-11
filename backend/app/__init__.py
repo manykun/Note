@@ -22,5 +22,8 @@ def create_app():
 
     from . import note
     app.register_blueprint(note.note)
+
+    from . import user
+    app.register_blueprint(user.user)
     
     return app
