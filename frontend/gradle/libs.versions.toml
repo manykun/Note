@@ -15,12 +15,16 @@ lifecycleViewmodelKtx = "2.6.1"
 navigationFragment = "2.6.0"
 navigationUi = "2.6.0"
 okhttp = "3.14.9"
+ormliteAndroid = "5.1"
+xormliteCompiler = "1.0.2"
+xormliteRuntime = "1.0.2"
 xpageLib = "3.4.0"
 xui = "1.2.1"
 
 [libraries]
 bubbletabbar = { module = "io.ak1:bubbletabbar", version.ref = "bubbletabbar" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+j256-ormlite-core = { module = "com.j256.ormlite:ormlite-core", version.ref = "ormliteAndroid" }
 jptabbar = { module = "com.jpeng:JPTabBar", version.ref = "jptabbar" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -34,6 +38,9 @@ lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-view
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+ormlite-android = { module = "com.j256.ormlite:ormlite-android", version.ref = "ormliteAndroid" }
+xormlite-compiler = { module = "com.github.xuexiangjys.XOrmlite:xormlite-compiler", version.ref = "xormliteCompiler" }
+xormlite-runtime = { module = "com.github.xuexiangjys.XOrmlite:xormlite-runtime", version.ref = "xormliteRuntime" }
 xpage-compiler = { module = "com.github.xuexiangjys.XPage:xpage-compiler", version.ref = "xpageLib" }
 xpage-lib = { module = "com.github.xuexiangjys.XPage:xpage-lib", version.ref = "xpageLib" }
 xui = { module = "com.github.xuexiangjys:XUI", version.ref = "xui" }

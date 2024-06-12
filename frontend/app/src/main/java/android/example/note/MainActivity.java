@@ -12,10 +12,6 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-//import com.xuexiang.xui.XUI;
-//import com.xuexiang.xui.widget.tabbar.VerticalTabLayout;
-//import com.xuexiang.xui.widget.tabbar.vertical.TabView;
-//import com.xuexiang.xui.widget.textview.badge.Badge;
 
 public class MainActivity extends AppCompatActivity {
     @Override
@@ -32,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
                 if (item.getItemId() == R.id.nav_list) {
                     selectedFragment = new NoteListFragment();
                 } else if (item.getItemId() == R.id.nav_notedetail) {
-                    selectedFragment = new NoteDetailFragment();
+                    selectedFragment = new NoteAddFragment();
                 } else if (item.getItemId() == R.id.nav_home) {
                     selectedFragment = new HomePageFragment();
                 }

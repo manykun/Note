@@ -38,6 +38,9 @@ public class LoginPage extends AppCompatActivity{
     private static final String KEY_EMAIL = "email";
     private static final String KEY_PASSWORD = "password";
     private static final String KEY_UID = "uid";
+    private static final String KEY_USERNAME = "username";
+    private static final String KEY_AVATAR = "avatar";
+    private static final String KEY_SIGNATURE = "signature";
 
 
     @Override
@@ -172,6 +175,15 @@ public class LoginPage extends AppCompatActivity{
                     // 获取uid
                     String uid = jsonObject.optString("uid");
                     editor.putString(KEY_UID, uid);
+
+                    String username = jsonObject.optString("username");
+                    editor.putString(KEY_USERNAME, username);
+
+                    // String avatar = jsonObject.optString("avatar");
+                    // editor.putString(KEY_AVATAR, avatar);
+
+                    String signature = jsonObject.optString("signature");
+                    editor.putString(KEY_SIGNATURE, signature);
 
                     editor.apply();
                     Log.d("LoginPage", "uid: " + uid);

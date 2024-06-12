@@ -37,6 +37,12 @@ dependencies {
     implementation libs.xpage.lib
     annotationProcessor libs.xpage.compiler
 
+    implementation libs.xormlite.runtime
+    annotationProcessor libs.xormlite.compiler
+
+    implementation libs.ormlite.android
+    implementation libs.j256.ormlite.core
+
     implementation libs.xui
     implementation libs.glide
     implementation libs.okhttp

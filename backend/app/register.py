@@ -148,8 +148,19 @@ def login():
                 line = line.split()
                 if password == line[1]:
                     # 返回uid
-                    return jsonify({'code': 200, 'msg': '登录成功', 'uid': line[2]})
+                    uid = line[2]
+                    break
                 else:
                     return jsonify({'code': 401, 'msg': '密码错误'})
-        else:
-            return jsonify({'code': 403, 'msg': '该邮箱未注册'})
+    
+    # 获取用户信息
+    user_path = os.path.join(current_path, 'db', 'user', uid)
+    info_path = os.path.join(user_path, 'userinfo', 'info.txt')
+    with open(info_path, 'r') as f:
+        line = f.readline()
+        info = line.split()
+        username = info[1]
+        signature = info[2]
+
+    return jsonify({'code': 200, 'msg': '登录成功', 'uid': uid, 'username': username, 'signature': signature})
+
