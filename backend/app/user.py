@@ -39,8 +39,6 @@ def edit_avatar():
     uid = request.form.get('uid')
     avatar = request.form.get('avatar')
 
-    print(avatar)
-
     if not uid or not avatar:
         return jsonify({'code': 400, 'msg': '参数不完整'})
     
