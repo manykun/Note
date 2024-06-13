@@ -1,11 +1,13 @@
 package android.example.note;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -16,14 +18,20 @@ import com.xuexiang.xormlite.InternalDataBaseRepository;
 import com.xuexiang.xormlite.db.DBService;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class NoteListFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private NoteAdapter noteAdapter;
-    private List<NoteModel> noteList;
     private DBService<NoteModel> mDBService;
+
+    private List<NoteModel> allNotes;
+    private List<NoteModel> filteredNotes;
+    private List<String> categories;
+    private ArrayAdapter<String> categoryAdapter;
+    private Spinner spinnerCategoryFilter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,34 +47,75 @@ public class NoteListFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         try {
-            noteList = mDBService.queryAll();
+            allNotes = mDBService.queryAll();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        noteAdapter = new NoteAdapter(noteList);
-        recyclerView.setAdapter(noteAdapter);
-
         Toolbar toolbar = view.findViewById(R.id.notelist_toolbar);
         toolbar.inflateMenu(R.menu.note_list);
 
-//        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-//            @Override
-//            public boolean onMenuItemClick(MenuItem item) {
-//                if (item.getItemId() == R.id.action_photo) {
-//                    showImageSourceDialog();
-//                    return true;
-//                } else if (item.getItemId() == R.id.action_record) {
-//                    showRecordSourceDialog();
-//                    return true;
-//                } else {
-//                    return false;
-//                }
-//            }
-//        });
+        // 获取分类
+        categories = new ArrayList<>();
+        categories.add("All");
+        categories.add("Not classified");
+        try {
+            allNotes = mDBService.queryAll();
+            for (NoteModel note : allNotes) {
+                if (!categories.contains(note.getTags()) && note.getTags() != null) {
+                    categories.add(note.getTags());
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
+        spinnerCategoryFilter = view.findViewById(R.id.spinnerCategoryFilter);
+        categoryAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, categories);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategoryFilter.setAdapter(categoryAdapter);
+
+
+        // 监听分类选择
+        spinnerCategoryFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                filterNotesByCategory(categories.get(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                filterNotesByCategory("All");
+            }
+        });
 
         return view;
 
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void filterNotesByCategory(String category) {
+        // 根据分类过滤笔记
+        filteredNotes = new ArrayList<>();
+
+        if (category.equals("All")) {
+            filteredNotes.addAll(allNotes);
+        } else if (category.equals("Not classified")) {
+            for (NoteModel note : allNotes) {
+                if (note.getTags() == null) {
+                    filteredNotes.add(note);
+                }
+            }
+        } else {
+            for (NoteModel note : allNotes) {
+                if (note.getTags() != null && note.getTags().equals(category)) {
+                    filteredNotes.add(note);
+                }
+            }
+        }
+
+        noteAdapter = new NoteAdapter(filteredNotes);
+        noteAdapter.notifyDataSetChanged();
+        recyclerView.setAdapter(noteAdapter);
     }
 }

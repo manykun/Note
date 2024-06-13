@@ -16,4 +16,8 @@
     <string name="notelist_fragment">NoteList Fragment</string>
     <string name="notedetail_fragment">NoteDetail Fragment</string>
     <string name="logoutstr">退出登录</string>
+
+    <string-array name="categories">
+    </string-array>
+
 </resources>

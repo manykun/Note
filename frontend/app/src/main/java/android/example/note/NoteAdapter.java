@@ -92,24 +92,6 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         builder.show();
     }
 
-    //        Button button = view.findViewById(R.id.add_note_button);
-//        // 在第一个Fragment中创建一个Bundle对象并设置数据
-//        Bundle bundle = new Bundle();
-//        bundle.putInt("Note_id", Integer.parseInt("1"));
-//
-//        Fragment noteaddFragment = new NoteAddFragment();
-//        noteaddFragment.setArguments(bundle);
-//
-//        button.setOnClickListener(v -> {
-//             assert getFragmentManager() != null;
-//             getFragmentManager().beginTransaction()
-//                     .replace(R.id.fragment_container, noteaddFragment)
-//                     .addToBackStack(null)
-//                     .commit();
-//
-//
-//        });
-
     @Override
     public int getItemCount() {
         return noteList.size();

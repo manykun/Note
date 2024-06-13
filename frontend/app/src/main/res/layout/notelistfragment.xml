@@ -12,6 +12,12 @@
         app:title="NoteList"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
+    <Spinner
+        android:id="@+id/spinnerCategoryFilter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/categories" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"

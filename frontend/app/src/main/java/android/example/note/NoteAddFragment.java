@@ -51,6 +51,7 @@ public class NoteAddFragment extends Fragment {
     private MediaRecorder mediaRecorder;
     private String audioFilePath;
     private String audioFileName;
+    private String Tag;
     private GridLayout gridLayout;
     private FloatingActionButton fabStopRecording;
     private int Note_id;
@@ -96,8 +97,10 @@ public class NoteAddFragment extends Fragment {
                     }
                 }
 
-
-
+                // 添加分类
+                if (noteModel.getTags() != null) {
+                    Tag = noteModel.getTags();
+                }
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             } catch (FileNotFoundException e) {
@@ -150,6 +153,9 @@ public class NoteAddFragment extends Fragment {
                 } else if (item.getItemId() == R.id.action_record) {
                     showRecordSourceDialog();
                     return true;
+                } else if (item.getItemId() == R.id.action_tag) {
+                    showCategoryDialog();
+                    return true;
                 } else {
                     return false;
                 }
@@ -161,6 +167,30 @@ public class NoteAddFragment extends Fragment {
 
     }
 
+    private void showCategoryDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Add Tag");
+        
+        // 设置输入框
+        final EditText input = new EditText(requireContext());
+        if (Tag != null) {
+            input.setHint(Tag);
+        } else {
+            input.setHint("Enter tag");
+        }
+
+        builder.setView(input);
+        
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String tag = input.getText().toString();
+                noteModel.setTags(tag);
+            }
+        });
+
+        builder.show();
+    }
 
 
     private void showRecordSourceDialog() {

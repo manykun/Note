@@ -37,6 +37,8 @@ import com.xuexiang.xormlite.db.DBService;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.File;
@@ -323,6 +325,7 @@ public class HomePageFragment extends Fragment {
         if (avatarUri.equals("default_avatar")) {
             imageViewAvatar.setImageResource(R.drawable.default_avatar);
         } else {
+            Log.d("what", avatarUri);
             imageViewAvatar.setImageURI(Uri.parse(avatarUri));
         }
 
@@ -403,7 +406,19 @@ public class HomePageFragment extends Fragment {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String res = response.body().string();
-                Log.d("HomePageFragment", "onResponse: " + res);
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(res);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                String code = jsonObject.optString("code");
+                if (code.equals("200")) {
+                    SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("login", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(KEY_AVATAR, String.valueOf(imageUri));
+                    editor.apply();
+                }
             }
         });
 

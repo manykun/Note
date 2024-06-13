@@ -22,8 +22,8 @@ public class NoteModel {
     @DatabaseField
     private String uid;
 
-    @DatabaseField(dataType = DataType.SERIALIZABLE)
-    private ArrayList<String> tags;
+    @DatabaseField
+    private String tags;
 
     @DatabaseField(dataType = DataType.SERIALIZABLE)
     private ArrayList<String> images;
@@ -70,11 +70,11 @@ public class NoteModel {
         this.uid = uid;
     }
 
-    public ArrayList<String> getTags() {
+    public String getTags() {
         return tags;
     }
 
-    public void setTags(ArrayList<String> tags) {
+    public void setTags(String tags) {
         this.tags = tags;
     }
 
