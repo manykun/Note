@@ -179,8 +179,8 @@ public class LoginPage extends AppCompatActivity{
                     String username = jsonObject.optString("username");
                     editor.putString(KEY_USERNAME, username);
 
-                    // String avatar = jsonObject.optString("avatar");
-                    // editor.putString(KEY_AVATAR, avatar);
+                     String avatar = jsonObject.optString("avatar");
+                     editor.putString(KEY_AVATAR, avatar);
 
                     String signature = jsonObject.optString("signature");
                     editor.putString(KEY_SIGNATURE, signature);

@@ -126,7 +126,7 @@ def register():
     info_path = os.path.join(info_path, 'info.txt')
     with open(info_path, 'w') as f:
         # 写入uid和默认用户名以及默认个性签名
-        f.write(str(uid) + ' ' + "username" + ' ' + "signature")
+        f.write(str(uid) + ' ' + "username" + ' ' + "signature" + "default_avatar\n")
     # 生成笔记文件夹
     note_path = os.path.join(user_path, 'note')
     os.makedirs(note_path)
@@ -163,6 +163,11 @@ def login():
         info = line.split()
         username = info[1]
         signature = info[2]
+        # 如果没有设置头像，返回默认头像
+        if len(info) < 4:
+            avatar = "default_avatar"
+        else:
+            avatar = info[3]
 
-    return jsonify({'code': 200, 'msg': '登录成功', 'uid': uid, 'username': username, 'signature': signature})
+    return jsonify({'code': 200, 'msg': '登录成功', 'uid': uid, 'username': username, 'signature': signature, 'avatar': avatar})
 
