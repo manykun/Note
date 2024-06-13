@@ -43,6 +43,8 @@ dependencies {
     implementation libs.ormlite.android
     implementation libs.j256.ormlite.core
 
+    implementation libs.recyclerview
+
     implementation libs.xui
     implementation libs.glide
     implementation libs.okhttp
