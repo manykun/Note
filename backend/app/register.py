@@ -122,6 +122,8 @@ def register():
     os.makedirs(user_path)
     # 生成用户信息文件
     info_path = os.path.join(user_path, 'userinfo')
+    os.makedirs(info_path)
+    info_path = os.path.join(info_path, 'info.txt')
     with open(info_path, 'w') as f:
         # 写入uid和默认用户名以及默认个性签名
         f.write(str(uid) + ' ' + "username" + ' ' + "signature")

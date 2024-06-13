@@ -1,8 +1,12 @@
 package android.example.note;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.table.DatabaseTable;
 
 import com.j256.ormlite.field.DatabaseField;
+
+import java.util.ArrayList;
+
 @DatabaseTable(tableName = "notes")
 public class NoteModel {
 
@@ -15,7 +19,18 @@ public class NoteModel {
     @DatabaseField
     private String content;
 
-    // 其他可能的字段，例如创建日期、修改日期等
+    @DatabaseField
+    private String uid;
+
+    @DatabaseField(dataType = DataType.SERIALIZABLE)
+    private ArrayList<String> tags;
+
+    @DatabaseField(dataType = DataType.SERIALIZABLE)
+    private ArrayList<String> images;
+
+    @DatabaseField(dataType = DataType.SERIALIZABLE)
+    private ArrayList<String> audio;
+
 
     // 默认构造函数是必需的
     public NoteModel() {
@@ -47,5 +62,35 @@ public class NoteModel {
         this.content = content;
     }
 
-    // 其他可能的getter和setter方法
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public ArrayList<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(ArrayList<String> tags) {
+        this.tags = tags;
+    }
+
+    public ArrayList<String> getImages() {
+        return images;
+    }
+
+    public void setImages(ArrayList<String> images) {
+        this.images = images;
+    }
+
+    public ArrayList<String> getAudio() {
+        return audio;
+    }
+
+    public void setAudio(ArrayList<String> audio) {
+        this.audio = audio;
+    }
 }
