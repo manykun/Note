@@ -33,11 +33,13 @@ def get_info():
 
     return jsonify({'code': 200, 'username': username, 'signature': signature})
 
-# 传输头像
-@user.route('/upload', methods=['POST'])
-def upload():
+# 修改头像
+@user.route('/updateavatar', methods=['POST'])
+def edit_avatar():
     uid = request.form.get('uid')
-    if not uid:
+    avatar = request.form.get('avatar')
+
+    if not uid or not avatar:
         return jsonify({'code': 400, 'msg': '参数不完整'})
     
     current_path = os.path.dirname(__file__)
@@ -45,14 +47,23 @@ def upload():
     if not os.path.exists(user_path):
         return jsonify({'code': 404, 'msg': '用户不存在'})
     
-    file = request.files['file']
-    if not file:
-        return jsonify({'code': 400, 'msg': '参数不完整'})
+    info_path = os.path.join(user_path, 'info.txt')
+    with open(info_path, 'r') as f:
+        line = f.readline()
+        info = line.split()
+        # info.append(avatar)
+        # 如果没有设置头像，就添加头像
+        if len(info) == 3:
+            info.append(avatar)
+        else:
+            info[3] = avatar
+
+
+    with open(info_path, 'w') as f:
+        f.write(' '.join(info))
     
-    file_path = os.path.join(user_path, 'avatar.jpg')
-    file.save(file_path)
-    
-    return jsonify({'code': 200, 'msg': '上传成功'})
+    return jsonify({'code': 200, 'msg': '修改成功'})
+
 
 # 修改用户名
 @user.route('/updateusername', methods=['POST'])
@@ -134,7 +145,6 @@ def edit_signature():
         f.write(' '.join(info))
     
     return jsonify({'code': 200, 'msg': '修改成功'})
-
 
 
 

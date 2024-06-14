@@ -11,4 +11,10 @@
         android:icon="@drawable/mic"
         android:title="Delete"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_tag"
+        android:icon="@drawable/baseline_category_24"
+        android:title="Category"
+        app:showAsAction="ifRoom" />
 </menu>

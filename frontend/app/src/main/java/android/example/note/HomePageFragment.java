@@ -16,6 +16,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,8 +32,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.xuexiang.xormlite.InternalDataBaseRepository;
+import com.xuexiang.xormlite.db.DBService;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.File;
@@ -40,6 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -64,6 +71,12 @@ public class HomePageFragment extends Fragment {
     private static final int SELECT_PHOTO = 1;
     String UID = "";
     ImageView imageViewAvatar;
+    private String avatarName;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -74,7 +87,7 @@ public class HomePageFragment extends Fragment {
         String email = sharedPreferences.getString(KEY_EMAIL, "");
         String password = sharedPreferences.getString(KEY_PASSWORD, "");
         UID = sharedPreferences.getString(KEY_UID, "");
-        String avatarurl = sharedPreferences.getString(KEY_AVATAR, "");
+        avatarName = sharedPreferences.getString(KEY_AVATAR, "");
         String user_name = sharedPreferences.getString(KEY_USERNAME, "username");
         String signature_ = sharedPreferences.getString(KEY_SIGNATURE, "signature");
 
@@ -86,7 +99,7 @@ public class HomePageFragment extends Fragment {
         signature.setText(signature_);
 
         Button changeUsername = view.findViewById(R.id.change_username_button);
-        
+
         changeUsername.setOnClickListener(v -> {
             // 修改用户名
             // 弹出对话框
@@ -310,7 +323,27 @@ public class HomePageFragment extends Fragment {
 
         imageViewAvatar = view.findViewById(R.id.avatar);
 
-        imageViewAvatar.setImageURI(Uri.parse(avatarurl));
+//        ArrayList<String> images = noteModel.getImages();
+//        if (images != null) {
+//            for (String image : images) {
+//                File file = new File(requireContext().getFilesDir(), image);
+//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), Uri.fromFile(file));
+//                addImageView(bitmap, image, 0);
+//            }
+//        }
+
+        if (avatarName.equals("default_avatar")) {
+            imageViewAvatar.setImageResource(R.drawable.default_avatar);
+        } else {
+            File file = new File(requireContext().getFilesDir(), avatarName);
+            Bitmap bitmap = null;
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), Uri.fromFile(file));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            imageViewAvatar.setImageBitmap(bitmap);
+        }
 
         imageViewAvatar.setOnClickListener(v -> {
             // 在Fragment的某个地方，例如onCreateView或其他适当的位置
@@ -318,7 +351,7 @@ public class HomePageFragment extends Fragment {
                 ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
             }
 
-            Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+            Intent photoPickerIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             photoPickerIntent.setType("image/*");
             startActivityForResult(photoPickerIntent, SELECT_PHOTO);
         });
@@ -341,57 +374,134 @@ public class HomePageFragment extends Fragment {
                 startActivity(intent);
             }
         });
- 
+
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == SELECT_PHOTO && resultCode == getActivity().RESULT_OK && data != null) {
-            Uri selectedImage = data.getData();
+            Uri imageUri = data.getData();
+            Bitmap imageBitmap = null;
             try {
-                InputStream imageStream = getActivity().getContentResolver().openInputStream(selectedImage);
-                Bitmap selectedBitmap = BitmapFactory.decodeStream(imageStream);
-
-                imageViewAvatar.setImageBitmap(selectedBitmap);
-                // 保存图片到本地（可选）
-                saveImage(selectedBitmap);
-            } catch (Exception e) {
-                e.printStackTrace();
+                imageBitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), imageUri);
+                avatarName = saveAvatar(imageBitmap);
+                SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("login", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(KEY_AVATAR, avatarName);
+                editor.apply();
+                imageViewAvatar.setImageBitmap(imageBitmap);
+                changeAvatar(avatarName);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
+
+//                    try {
+//                        imageBitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), imageUri);
+//                        String imageNmae = saveImage(imageBitmap);
+//                        ArrayList<String> imageList = noteModel.getImages();
+//                        if (imageList == null) {
+//                            imageList = new ArrayList<>();
+//                        }
+//                        imageList.add(imageNmae);
+//                        noteModel.setImages(imageList);
+//                        addImageView(imageBitmap, imageNmae, 0);
+//                    } catch (IOException e) {
+//                        throw new RuntimeException(e);
+//                    }
         }
     }
+//    private String saveImage(Bitmap imageBitmap) {
+//        String timestamp = String.valueOf(System.currentTimeMillis());
+//        String FileName = "IMG_" + timestamp + ".jpg";
+//        File file = new File(requireContext().getFilesDir(), FileName);
+//
+//        try {
+//            FileOutputStream out = new FileOutputStream(file);
+//            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+//            out.flush();
+//            out.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return FileName;
+//    }
 
-    private void saveImage(Bitmap bitmap) {
-        // 指定路径
-        String dir = requireActivity().getFilesDir().getAbsolutePath();
-        File file = new File(dir);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
+    private String saveAvatar(Bitmap imageBitmap) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String FileName = "AVATAR_" + timestamp + ".jpg";
+        File file = new File(requireContext().getFilesDir(), FileName);
 
-        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("login", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        UID = sharedPreferences.getString(KEY_UID, "");
-        File imageFile = new File(file, UID + "avatar.jpg");
         try {
-            FileOutputStream fos = new FileOutputStream(imageFile);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-            fos.flush();
-            fos.close();
-
-            String avatarurl = imageFile.getAbsolutePath();
-            
-            editor.putString("avatar", avatarurl);
-            editor.apply();
-
-            // 上传图片
-            // uploadImage(imageFile);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            FileOutputStream out = new FileOutputStream(file);
+            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
+        return FileName;
+    }
+
+    private void changeAvatar(String avatarName) {
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .build();
+
+        RequestBody formBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("uid", UID)
+                .addFormDataPart("avatar", avatarName)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(getString(R.string.ip) + "/updateavatar")
+                .post(formBody)
+                .build();
+
+        Call call = client.newCall(request);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Log.d("HomePageFragment", "onFailure: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String res = response.body().string();
+
+            }
+        });
+
+
     }
 }
+
+//    private String saveImage(Bitmap bitmap) {
+//        // 指定路径
+//
+//        String timestamp = String.valueOf(System.currentTimeMillis());
+//        String FileName = "AVATAR_" + timestamp + ".jpg";
+//        File file = new File(requireContext().getFilesDir(), FileName);
+//
+//        try {
+//            FileOutputStream out = new FileOutputStream(file);
+//            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+//            out.flush();
+//            out.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("login", Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = sharedPreferences.edit();
+//        editor.putString(KEY_AVATAR, file.getAbsolutePath());
+//        editor.apply();
+//
+//        return FileName;
+//    }
 
