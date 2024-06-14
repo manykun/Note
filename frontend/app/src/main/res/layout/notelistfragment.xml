@@ -12,6 +12,13 @@
         app:title="NoteList"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
+    <SearchView
+        android:id="@+id/searchView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:iconifiedByDefault="false"
+        android:queryHint="Search Notes" />
+
     <Spinner
         android:id="@+id/spinnerCategoryFilter"
         android:layout_width="match_parent"

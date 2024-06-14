@@ -71,6 +71,7 @@ public class HomePageFragment extends Fragment {
     private static final int SELECT_PHOTO = 1;
     String UID = "";
     ImageView imageViewAvatar;
+    private String avatarName;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -86,7 +87,7 @@ public class HomePageFragment extends Fragment {
         String email = sharedPreferences.getString(KEY_EMAIL, "");
         String password = sharedPreferences.getString(KEY_PASSWORD, "");
         UID = sharedPreferences.getString(KEY_UID, "");
-        String avatarUri = sharedPreferences.getString(KEY_AVATAR, "");
+        avatarName = sharedPreferences.getString(KEY_AVATAR, "");
         String user_name = sharedPreferences.getString(KEY_USERNAME, "username");
         String signature_ = sharedPreferences.getString(KEY_SIGNATURE, "signature");
 
@@ -322,11 +323,26 @@ public class HomePageFragment extends Fragment {
 
         imageViewAvatar = view.findViewById(R.id.avatar);
 
-        if (avatarUri.equals("default_avatar")) {
+//        ArrayList<String> images = noteModel.getImages();
+//        if (images != null) {
+//            for (String image : images) {
+//                File file = new File(requireContext().getFilesDir(), image);
+//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), Uri.fromFile(file));
+//                addImageView(bitmap, image, 0);
+//            }
+//        }
+
+        if (avatarName.equals("default_avatar")) {
             imageViewAvatar.setImageResource(R.drawable.default_avatar);
         } else {
-            Log.d("what", avatarUri);
-            imageViewAvatar.setImageURI(Uri.parse(avatarUri));
+            File file = new File(requireContext().getFilesDir(), avatarName);
+            Bitmap bitmap = null;
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), Uri.fromFile(file));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            imageViewAvatar.setImageBitmap(bitmap);
         }
 
         imageViewAvatar.setOnClickListener(v -> {
@@ -369,15 +385,66 @@ public class HomePageFragment extends Fragment {
             Bitmap imageBitmap = null;
             try {
                 imageBitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), imageUri);
+                avatarName = saveAvatar(imageBitmap);
+                SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("login", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(KEY_AVATAR, avatarName);
+                editor.apply();
                 imageViewAvatar.setImageBitmap(imageBitmap);
-                changeAvatar(imageUri);
+                changeAvatar(avatarName);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
+//                    try {
+//                        imageBitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), imageUri);
+//                        String imageNmae = saveImage(imageBitmap);
+//                        ArrayList<String> imageList = noteModel.getImages();
+//                        if (imageList == null) {
+//                            imageList = new ArrayList<>();
+//                        }
+//                        imageList.add(imageNmae);
+//                        noteModel.setImages(imageList);
+//                        addImageView(imageBitmap, imageNmae, 0);
+//                    } catch (IOException e) {
+//                        throw new RuntimeException(e);
+//                    }
         }
     }
+//    private String saveImage(Bitmap imageBitmap) {
+//        String timestamp = String.valueOf(System.currentTimeMillis());
+//        String FileName = "IMG_" + timestamp + ".jpg";
+//        File file = new File(requireContext().getFilesDir(), FileName);
+//
+//        try {
+//            FileOutputStream out = new FileOutputStream(file);
+//            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+//            out.flush();
+//            out.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return FileName;
+//    }
 
-    private void changeAvatar(Uri imageUri) {
+    private String saveAvatar(Bitmap imageBitmap) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String FileName = "AVATAR_" + timestamp + ".jpg";
+        File file = new File(requireContext().getFilesDir(), FileName);
+
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return FileName;
+    }
+
+    private void changeAvatar(String avatarName) {
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(10, TimeUnit.SECONDS)
@@ -387,7 +454,7 @@ public class HomePageFragment extends Fragment {
         RequestBody formBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("uid", UID)
-                .addFormDataPart("avatar", String.valueOf(imageUri))
+                .addFormDataPart("avatar", avatarName)
                 .build();
 
         Request request = new Request.Builder()
@@ -406,19 +473,7 @@ public class HomePageFragment extends Fragment {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String res = response.body().string();
-                JSONObject jsonObject = null;
-                try {
-                    jsonObject = new JSONObject(res);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                String code = jsonObject.optString("code");
-                if (code.equals("200")) {
-                    SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("login", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString(KEY_AVATAR, String.valueOf(imageUri));
-                    editor.apply();
-                }
+
             }
         });
 

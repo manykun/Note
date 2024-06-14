@@ -2,13 +2,20 @@ package android.example.note;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.SearchView;
 import android.widget.Spinner;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,7 +39,7 @@ public class NoteListFragment extends Fragment {
     private List<String> categories;
     private ArrayAdapter<String> categoryAdapter;
     private Spinner spinnerCategoryFilter;
-
+    private String currentCategory = "All";
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,21 +87,44 @@ public class NoteListFragment extends Fragment {
         spinnerCategoryFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                filterNotesByCategory(categories.get(position));
+                currentCategory = categories.get(position);
+                filterNotesByCategoryAndSearch(categories.get(position), "");
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                filterNotesByCategory("All");
+                currentCategory = "All";
+                filterNotesByCategoryAndSearch("All", "");
             }
         });
 
-        return view;
+        SearchView searchView = view.findViewById(R.id.searchView);
+        searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
 
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.d("NoteListFragment", "onQueryTextSubmit: " + query);
+                filterNotesByCategoryAndSearch(currentCategory, query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.d("NoteListFragment", "onQueryTextChange: " + newText);
+                filterNotesByCategoryAndSearch(currentCategory, newText);
+                return true;
+            }
+        });
+
+
+
+
+        return view;
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private void filterNotesByCategory(String category) {
+    private void filterNotesByCategoryAndSearch(String category, String searchText) {
         // 根据分类过滤笔记
         filteredNotes = new ArrayList<>();
 
@@ -114,8 +144,25 @@ public class NoteListFragment extends Fragment {
             }
         }
 
-        noteAdapter = new NoteAdapter(filteredNotes);
-        noteAdapter.notifyDataSetChanged();
-        recyclerView.setAdapter(noteAdapter);
+        // 根据搜索内容过滤笔记
+        if (!searchText.isEmpty()) {
+            List<NoteModel> tempNotes = new ArrayList<>(filteredNotes);
+            filteredNotes.clear();
+            for (NoteModel note : tempNotes) {
+                // 搜索标题和内容且判断内容是否非空
+                if (note.getTitle().toLowerCase().contains(searchText.toLowerCase()) ||
+                        (note.getContent() != null && note.getContent().toLowerCase().contains(searchText.toLowerCase()))) {
+                    filteredNotes.add(note);
+                }
+            }
+
+            noteAdapter = new NoteAdapter(filteredNotes);
+            noteAdapter.notifyDataSetChanged();
+            recyclerView.setAdapter(noteAdapter);
+        } else {
+            noteAdapter = new NoteAdapter(filteredNotes);
+            noteAdapter.notifyDataSetChanged();
+            recyclerView.setAdapter(noteAdapter);
+        }
     }
 }

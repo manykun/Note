@@ -33,6 +33,7 @@ android {
 
 dependencies {
     implementation  libs.bubbletabbar
+    implementation libs.circleimageview
 
     implementation libs.xpage.lib
     annotationProcessor libs.xpage.compiler
