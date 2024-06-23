@@ -2,7 +2,7 @@ from flask import Flask
 from flask import request, jsonify
 from flask import Blueprint
 from flask_mail import Message
-from . import mail
+from .. import mail
 
 note = Blueprint('note', __name__)
 

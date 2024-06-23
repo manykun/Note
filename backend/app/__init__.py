@@ -1,29 +1,29 @@
-import os
 from flask import Flask
-from flask_mail import Mail, Message
-
+from flask_mail import Mail
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from app.config import DevelopmentConfig
+import os
 
 mail = Mail()
+db = SQLAlchemy()
+migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
+    app.config.from_object(DevelopmentConfig)
 
-    app.config['MAIL_SERVER'] = 'smtp.163.com'
-    app.config['MAIL_PORT'] = 465
-    app.config['MAIL_USE_SSL'] = True
-    app.config['MAIL_USERNAME'] = 'manykun@163.com'
-    app.config['MAIL_PASSWORD'] = 'EDKLLVBZQYAJUKIM'
-    app.config['MAIL_DEFAULT_SENDER'] = 'manykun@163.com'
-
+    db.init_app(app)
+    migrate.init_app(app, db)
     mail.init_app(app)
 
-    from . import register
+    from .blueprints import register
     app.register_blueprint(register.reg)
 
-    from . import note
+    from .blueprints import note
     app.register_blueprint(note.note)
 
-    from . import user
+    from .blueprints import user
     app.register_blueprint(user.user)
     
     return app
